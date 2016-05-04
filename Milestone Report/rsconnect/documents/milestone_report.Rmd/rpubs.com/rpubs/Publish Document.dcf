@@ -1,0 +1,7 @@
+name: Publish Document
+account: rpubs
+server: rpubs.com
+bundleId:
+        https://api.rpubs.com/api/v1/document/177053/3055c5f2a277489eb094a29aa1067348
+url: http://rpubs.com/ocals/177053
+when: 1461993067.80329

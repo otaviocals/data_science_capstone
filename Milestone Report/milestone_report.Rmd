@@ -1,0 +1,98 @@
+---
+title: "Data Science Capstone Project - Milestone Report"
+author: "Otavio Cals"
+date: "April 29, 2016"
+output: html_document
+---
+
+# Introduction
+
+In this publication we report our progress so far into the Johns Hopkins' Data Science Capstone Project. We will present here the data shared by SwiftKey, perform a quick analysis on it and briefly describes our goal for the eventual app for the final project.
+
+# Loading the Data
+
+First, we will load the SwiftKey Data. For this project, Swiftkey has shared text datasets from Twitter, blogposts and newsposts, available in English, German, Finnish and Russian. For this report, we shall focus on the english version of the data.  
+
+```{r, warning=FALSE, cache=TRUE}
+news  <-  readLines("../Datasets/en_US/en_US.news.txt", encoding="UTF-8")
+twitter  <-  readLines("../Datasets/en_US/en_US.twitter.txt", encoding="UTF-8")
+blogs  <-  readLines("../Datasets/en_US/en_US.blogs.txt", encoding="UTF-8")
+```
+
+Now we print the first lines of each dataset to verify that they were properly loaded.  
+
+```{r cache=TRUE}
+head(news,3)
+head(twitter,3)
+head(blogs,3)
+```
+
+# Data Analysis
+
+Here we will perform some brief data analysis on the datasets. We begin by getting a summary of them. The Length variable indicates the amount of lines in the dataset.  
+
+```{r cache=TRUE}
+summary(news)
+summary(twitter)
+summary(blogs)
+```
+  
+  
+Now, some word count on the datasets. For this task, we will use the stringi library.  
+The Words variable indicates the total number of words, the CharsWord indicate the total number of characters and the CharsWhite indicate the total number of whitespaces.  
+  
+  
+```{r cache=TRUE}
+require(stringi)
+
+stri_stats_latex(news)[c(4,1,3)]
+stri_stats_latex(twitter)[c(4,1,3)]
+stri_stats_latex(blogs)[c(4,1,3)]
+```
+  
+  
+Next, we will perform a word frequency count. For that, we have written three R scripts:
+
+ * tokenize(): for tokenization of the text;  
+ * filter_tokens(): for common words filtering;  
+ * aggregator(): for frequency analysis.  
+
+Since this step is quite computation heavy and the scripts are not yet optimized, we will run then only on a subset of the datasets and will print only the 10 most frequent words in each dataset after the filtering.  
+
+```{r cache=TRUE}
+source("../Scripts/tokenize.R")
+source("../Scripts/filter_tokens.R")
+source("../Scripts/aggregator.R")
+
+token_news <- tokenize(news[1:1000])
+token_twitter <- tokenize(twitter[1:1000])
+token_blogs <- tokenize(blogs[1:1000])
+
+common_words <- stopwords("english")
+
+filtered_news <- filter_tokens(token_news,common_words)
+filtered_twitter <- filter_tokens(token_twitter,common_words)
+filtered_blogs <- filter_tokens(token_blogs,common_words)
+
+freq_news <- aggregator(filtered_news)
+freq_twitter <- aggregator(filtered_twitter)
+freq_blogs <- aggregator(filtered_blogs)
+
+head(freq_news,10)
+head(freq_twitter,10)
+head(freq_blogs,10)
+```
+
+To end the analysis, we make a barplot of the most frequent words, we have:
+
+```{r cache=TRUE}
+barplot(head(freq_news,10)[,2],names.arg = head(freq_news,10)[,1],ylim=c(0,300),main = "Most Frequent Words in the News Dataset")
+barplot(head(freq_twitter,10)[,2],names.arg = head(freq_twitter,10)[,1],ylim=c(0,100),main = "Most Frequent Words in the Twitter Dataset")
+barplot(head(freq_blogs,10)[,2],names.arg = head(freq_blogs,10)[,1],ylim=c(0,190),main = "Most Frequent Words in the Blogs Dataset")
+```
+
+# Final Project
+
+Our goal for the final project is to use the previous frequency analysis method, in an iterative fashion, to trace the words with the highest correlation to a specific, target word.  
+After that, we plan to create a "Correlation Density Map" of that target word, allowing us to measure the breadth of a specific subject (in this case, the target word). A word with a highly concentrated CDM over a few related words would indicate a low-breadth subject, while a word with a low concentration over a vast set of words would indicate a high-breadth subject.  
+One could then apply this routine, in areas such as social media and news reporting, to perform more focused searches and better distribute content.
