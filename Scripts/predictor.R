@@ -12,11 +12,11 @@ predictor<-function(token,text,lines=0,filter=FALSE,language="english")
 	}
 
 #Loading scripts
-	source("Scripts/readtext.R")
-	source("Scripts/tokenize.R")
-	source("Scripts/filter_tokens.R")
-	source("Scripts/aggregator.R")
-	source("Scripts/ngramer.R")
+	source("../Scripts/readtext.R")
+	source("../Scripts/tokenize.R")
+	source("../Scripts/filter_tokens.R")
+	source("../Scripts/aggregator.R")
+	source("../Scripts/ngramer.R")
 
 #Grabbing Lines
 
