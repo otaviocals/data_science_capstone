@@ -1,22 +1,13 @@
 predictor<-function(token,text,lines=0,filter=FALSE,language="english")
 {
-#Loading libraries
-	package_list <- c("tm")
-	for( i in length(package_list))
-	{
-		if (!require(package_list[i],character.only = TRUE))
-    			{
-		      	install.packages(package_list[i],dep=TRUE)
-			        if(!require(package_list[i],character.only = TRUE)) stop("Package not found")
-			}
-	}
+
 
 #Loading scripts
-	source("../Scripts/readtext.R")
-	source("../Scripts/tokenize.R")
-	source("../Scripts/filter_tokens.R")
-	source("../Scripts/aggregator.R")
-	source("../Scripts/ngramer.R")
+	source("Scripts/readtext.R")
+	source("Scripts/tokenize.R")
+	source("Scripts/filter_tokens.R")
+	source("Scripts/aggregator.R")
+	source("Scripts/ngramer.R")
 
 #Grabbing Lines
 
