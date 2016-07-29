@@ -221,7 +221,17 @@ text_mapping<- function(word,text,lines=0,depth=1,synthesize=TRUE,filter=FALSE,l
 							total_rank[[depth]][[j]][k,3] <- NA
 						}
 					}
-				})
+				} 
+				else
+				{
+					total_rank[[depth]][[j]]<- as.data.frame(matrix(c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA),nrow=5,ncol=3,byrow = TRUE))
+					colnames(total_rank[[depth]][[j]]) <- c("NA","Freq","Points")
+					print(depth)
+					print(j)
+					print(total_rank[[depth]][[j]])
+				
+				}
+				)
 			}
 		}
 
