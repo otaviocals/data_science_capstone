@@ -170,8 +170,50 @@ text_mapping<- function(word,text,lines=0,depth=1,synthesize=TRUE,filter=FALSE,l
 					colnames(curr_rank) <- c(curr_word,"Freq","Points")
 					total_rank[[i]][[j]]<-curr_rank
 
+					k<-1
+					for(k in 1:length(total_rank[[i]][[j]][,1]))
+					{
+
+						to_credit <- grep(paste0("^",total_rank[[i]][[j]][k,1],"$"),word_list)
+
+						if(length(to_credit)>0)
+						{
+							word_to_credit <- word_list[to_credit[1]]
+
+							q<-1
+							w<-1
+							e<-1
+							stop_flag<-FALSE
+							for(q in 1:depth)
+							{
+								for(w in 1:length(total_rank[[q]]))
+								{
+									for(e in 1:5)
+									{
+										if(!is.na(total_rank[[q]][[w]]) && !is.na(total_rank[[i]][[j]][k,3]) && as.character(total_rank[[q]][[w]][e,1]) == word_to_credit)
+										{
+
+												total_rank[[q]][[w]][e,3]<- total_rank[[q]][[w]][e,3] + total_rank[[i]][[j]][k,3]
+												total_rank[[i]][[j]][k,3] <- NA
+												
+
+												stop_flag<-TRUE
+										}
+										if(stop_flag) break
+									}
+									if(stop_flag) break
+								}
+								if(stop_flag) break
+							}
+							
+						}
+						
+					}
+					#total_rank[[i]][[j]]<-curr_rank
+
 				} else{
-					total_rank[[i]][[j]]<-NA
+					total_rank[[i]][[j]]<-as.data.frame(matrix(c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA),nrow=5,ncol=3,byrow = TRUE))
+					colnames(total_rank[[i]][[j]]) <- c("NA","Freq","Points")				
 				}
 			}
 			
@@ -188,11 +230,11 @@ text_mapping<- function(word,text,lines=0,depth=1,synthesize=TRUE,filter=FALSE,l
 					current_words_list_depth <- as.character(total_rank[[depth]][[j]][,1])
 					for(k in 1:length(current_words_list_depth))
 					{
-						to_credit <- grep(current_words_list_depth[k],word_list)
+						to_credit <- grep(paste0("^",current_words_list_depth[k],"$"),word_list)
+
 						if(length(to_credit)>0)
 						{
-							word_to_credit <- word_list[to_credit]
-
+							word_to_credit <- word_list[to_credit[1]]
 
 							q<-1
 							w<-1
@@ -204,10 +246,10 @@ text_mapping<- function(word,text,lines=0,depth=1,synthesize=TRUE,filter=FALSE,l
 								{
 									for(e in 1:5)
 									{
-										if(!is.na(total_rank[[q]][[w]]) && as.character(total_rank[[q]][[w]][e,1]) == word_to_credit)
+										if(!is.na(total_rank[[q]][[w]])&& !is.na(total_rank[[depth]][[j]][k,3]) && as.character(total_rank[[q]][[w]][e,1]) == word_to_credit)
 										{
 
-												total_rank[[q]][[w]][e,3]<- total_rank[[q]][[w]][e,3] + 100/(depth+1)
+												total_rank[[q]][[w]][e,3]<- total_rank[[q]][[w]][e,3] + total_rank[[depth]][[j]][k,3]
 												stop_flag<-TRUE
 										}
 										if(stop_flag) break
@@ -225,11 +267,7 @@ text_mapping<- function(word,text,lines=0,depth=1,synthesize=TRUE,filter=FALSE,l
 				else
 				{
 					total_rank[[depth]][[j]]<- as.data.frame(matrix(c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA),nrow=5,ncol=3,byrow = TRUE))
-					colnames(total_rank[[depth]][[j]]) <- c("NA","Freq","Points")
-					print(depth)
-					print(j)
-					print(total_rank[[depth]][[j]])
-				
+					colnames(total_rank[[depth]][[j]]) <- c("NA","Freq","Points")				
 				}
 				)
 			}
@@ -237,7 +275,6 @@ text_mapping<- function(word,text,lines=0,depth=1,synthesize=TRUE,filter=FALSE,l
 
 		result <- total_rank
 	}
-
 
 	result
 }
