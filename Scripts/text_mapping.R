@@ -92,7 +92,7 @@ text_mapping<- function(word,text,lines=0,depth=1,synthesize=TRUE,filter=FALSE,l
 			{	
 
 				k <- 1
-				
+				list_word_to_credit <- list()
 					
 				for (k in 1:length(words_depth[[i]]))
 				{
@@ -104,6 +104,7 @@ text_mapping<- function(word,text,lines=0,depth=1,synthesize=TRUE,filter=FALSE,l
 						q<-1
 						w<-1
 						stop_flag<-FALSE
+						
 						for(q in 1:(i-1))
 						{
 							for(w in 1:length(words_depth[[q]]))
@@ -112,11 +113,14 @@ text_mapping<- function(word,text,lines=0,depth=1,synthesize=TRUE,filter=FALSE,l
 								suppressWarnings(if(!is.na(words_depth[[i]][[k]]) && words_depth[[i]][[k]] != word && !is.na(total_rank[[q]][[w]]))
 								{
 		
-									to_point <- grep(words_depth[[i]][[k]],as.character(total_rank[[q]][[w]][,1]))
+									to_point <- grep(paste0("^",words_depth[[i]][[k]],"$"),word_list)
 
 									if(length(to_point)>0)
 									{
-										total_rank[[q]][[w]][to_point,3]<- total_rank[[q]][[w]][to_point,3] + 100/i
+										list_word_to_credit <- c(list_word_to_credit, word_list[to_point[1]])
+
+										#total_rank[[q]][[w]][to_point,3]<- total_rank[[q]][[w]][to_point,3] + 100/i
+
 										stop_flag<-TRUE
 									}
 								})
@@ -171,7 +175,7 @@ text_mapping<- function(word,text,lines=0,depth=1,synthesize=TRUE,filter=FALSE,l
 					total_rank[[i]][[j]]<-curr_rank
 
 					k<-1
-					for(k in 1:length(total_rank[[i]][[j]][,1]))
+					for(k in 1:5)
 					{
 
 						to_credit <- grep(paste0("^",total_rank[[i]][[j]][k,1],"$"),word_list)
@@ -195,8 +199,7 @@ text_mapping<- function(word,text,lines=0,depth=1,synthesize=TRUE,filter=FALSE,l
 
 												total_rank[[q]][[w]][e,3]<- total_rank[[q]][[w]][e,3] + total_rank[[i]][[j]][k,3]
 												total_rank[[i]][[j]][k,3] <- NA
-												
-
+												word_list <- c(word_list,total_rank[[i]][[j]][k,1])
 												stop_flag<-TRUE
 										}
 										if(stop_flag) break
@@ -208,8 +211,9 @@ text_mapping<- function(word,text,lines=0,depth=1,synthesize=TRUE,filter=FALSE,l
 							
 						}
 						
+						
 					}
-					#total_rank[[i]][[j]]<-curr_rank
+					
 
 				} else{
 					total_rank[[i]][[j]]<-as.data.frame(matrix(c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA),nrow=5,ncol=3,byrow = TRUE))
@@ -218,58 +222,72 @@ text_mapping<- function(word,text,lines=0,depth=1,synthesize=TRUE,filter=FALSE,l
 			}
 			
 		}
+
+		i<-1
 		j<-1
 
 		if (synthesize==TRUE)
 		{
-			for(j in 1:length(total_rank[[depth]]))
-			{	
-				suppressWarnings(if(!is.na(total_rank[[depth]][[j]]))
-				{
-					k<- 1
-					current_words_list_depth <- as.character(total_rank[[depth]][[j]][,1])
-					for(k in 1:length(current_words_list_depth))
+
+			word_list <- character()
+			
+			for(i in 1:depth)
+			{
+				for(j in 1:length(total_rank[[i]]))
+				{	
+					suppressWarnings(if(!is.na(total_rank[[i]][[j]]))
 					{
-						to_credit <- grep(paste0("^",current_words_list_depth[k],"$"),word_list)
-
-						if(length(to_credit)>0)
+						k<- 1
+						current_words_list_depth <- as.character(total_rank[[i]][[j]][,1])
+						for(k in 1:length(current_words_list_depth))
 						{
-							word_to_credit <- word_list[to_credit[1]]
+							to_credit <- grep(paste0("^",current_words_list_depth[k],"$"),word_list)
 
-							q<-1
-							w<-1
-							e<-1
-							stop_flag<-FALSE
-							for(q in 1:depth)
+							if(length(to_credit)>0)
 							{
-								for(w in 1:length(total_rank[[q]]))
+								word_to_credit <- word_list[to_credit[1]]
+	
+								q<-1
+								w<-1
+								e<-1
+								stop_flag<-FALSE
+								for(q in 1:depth)
 								{
-									for(e in 1:5)
+									for(w in 1:length(total_rank[[q]]))
 									{
-										if(!is.na(total_rank[[q]][[w]])&& !is.na(total_rank[[depth]][[j]][k,3]) && as.character(total_rank[[q]][[w]][e,1]) == word_to_credit)
+										for(e in 1:5)
 										{
+											if(!is.na(total_rank[[q]][[w]])&& !is.na(total_rank[[i]][[j]][k,3]) && as.character(total_rank[[q]][[w]][e,1]) == word_to_credit && (q!=i || w!=j || e!=k))
+											{
 
-												total_rank[[q]][[w]][e,3]<- total_rank[[q]][[w]][e,3] + total_rank[[depth]][[j]][k,3]
+												total_rank[[q]][[w]][e,3]<- total_rank[[q]][[w]][e,3] + total_rank[[i]][[j]][k,3]
+												total_rank[[i]][[j]][k,3] <- NA
 												stop_flag<-TRUE
+
+											}
+											if(stop_flag) break
 										}
 										if(stop_flag) break
 									}
 									if(stop_flag) break
 								}
-								if(stop_flag) break
+
+
+								#total_rank[[depth]][[j]][k,3] <- NA
 							}
-
-
-							total_rank[[depth]][[j]][k,3] <- NA
+							else 
+							{
+								word_list <- c(word_list,as.character(current_words_list_depth[k]))
+							}
 						}
+					} 
+					else
+					{
+						total_rank[[depth]][[j]]<- as.data.frame(matrix(c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA),nrow=5,ncol=3,byrow = TRUE))
+						colnames(total_rank[[depth]][[j]]) <- c("NA","Freq","Points")				
 					}
-				} 
-				else
-				{
-					total_rank[[depth]][[j]]<- as.data.frame(matrix(c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA),nrow=5,ncol=3,byrow = TRUE))
-					colnames(total_rank[[depth]][[j]]) <- c("NA","Freq","Points")				
+					)
 				}
-				)
 			}
 		}
 
